@@ -14,7 +14,7 @@
             <p>Téléphone : {{ contact.phone }}</p>
         </li>
     </ul>
-    <form method="post" action="{{ url_for('delete_contact_view', contact_id=contact_id) }}">
+    <form method="post" action="{{ url_for('delete_contact_view', contact_id=contact._id) }}">
         <button type="submit">Confirmer la suppression</button>
     </form>
     {% else %}

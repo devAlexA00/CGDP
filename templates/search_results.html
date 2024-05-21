@@ -12,7 +12,7 @@
             <p>Nom : {{ contact.name }}</p>
             <p>Email : {{ contact.email }}</p>
             <p>Téléphone : {{ contact.phone }}</p>
-            <a href="{{ url_for('delete_contact_view', contact_id=loop.index0) }}">Supprimer</a>
+            <a href="{{ url_for('delete_contact_view', contact_id=contact._id) }}">Supprimer</a>
         </li>
         {% endfor %}
     </ul>

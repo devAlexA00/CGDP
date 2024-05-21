@@ -1,5 +1,5 @@
 // Select the database to use.
-use('myNewDatabase');
+use('CGDP_DB');
 
 // Create the 'contacts' collection and insert some sample documents.
 db.getCollection('contacts').insertMany([
