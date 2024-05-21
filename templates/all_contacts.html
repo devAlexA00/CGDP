@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tous les contacts</title>
+</head>
+<body>
+    <h1>Tous les contacts</h1>
+    <ul>
+        {% for contact in contacts %}
+        <li>
+            <p>Nom : {{ contact.name }}</p>
+            <p>Email : {{ contact.email }}</p>
+            <p>Téléphone : {{ contact.phone }}</p>
+            <a href="{{ url_for('delete_contact_view', contact_id=loop.index0) }}">Supprimer</a>
+        </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

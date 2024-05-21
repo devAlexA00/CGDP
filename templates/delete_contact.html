@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Supprimer un contact</title>
+</head>
+<body>
+    <h1>Supprimer un contact</h1>
+    {% if contact %}
+    <p>Êtes-vous sûr de vouloir supprimer le contact suivant ?</p>
+    <ul>
+        <li>
+            <p>Nom : {{ contact.name }}</p>
+            <p>Email : {{ contact.email }}</p>
+            <p>Téléphone : {{ contact.phone }}</p>
+        </li>
+    </ul>
+    <form method="post" action="{{ url_for('delete_contact_view', contact_id=contact_id) }}">
+        <button type="submit">Confirmer la suppression</button>
+    </form>
+    {% else %}
+    <p>Le contact que vous essayez de supprimer n'existe pas.</p>
+    {% endif %}
+    <a href="{{ url_for('home') }}">Retour à l'accueil</a>
+</body>
+</html>
