@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
+    volumes:
+      - ./mongo/init-mongo.js:/docker-entrypoint-initdb.d/ini-mongo.js:ro
+    ports:
+      - "27017:27017"
+
+  flask_app:
+    build:
+      context: ./flask_app   # Update this line to point to the correct directory
+    container_name: flaskapp
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/CGDP_DB
