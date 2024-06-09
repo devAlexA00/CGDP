@@ -1,5 +1,5 @@
 from typing import List, Dict
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, request, jsonify
 import mysql.connector
 import json
 
@@ -236,6 +236,56 @@ def index():
 def get_contacts_route() -> str:
     contacts = get_contacts()
     return jsonify(contacts)
+
+@app.route('/api/contacts', methods=['POST'])
+def add_contact():
+    data = request.get_json()
+    prenom = data['firstname']
+    nom = data['lastname']
+    age = data['age']
+    sex = data['sex']
+    email = data['email']
+    tel = data['phone']
+    company = data['company']
+    region = data['region']
+
+    sql = "INSERT INTO contacts (prenom, nom, age, sex, email, tel, company, region) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+    values = (prenom, nom, age, sex, email, tel, company, region)
+
+    CURSOR.execute(sql, values)
+    CONNECTION.commit()
+
+    return jsonify({'message': 'Contact ajouté avec succès'}), 201
+
+@app.route('/api/contacts/<int:id>', methods=['PUT'])
+def update_contact(id):
+    data = request.get_json()
+    prenom = data['firstname']
+    nom = data['lastname']
+    age = data['age']
+    sex = data['sex']
+    email = data['email']
+    tel = data['phone']
+    company = data['company']
+    region = data['region']
+
+    sql = "UPDATE contacts SET prenom = %s, nom = %s, age = %s, sex = %s, email = %s, tel = %s, company = %s, region = %s WHERE id = %s"
+    values = (prenom, nom, age, sex, email, tel, company, region, id)
+
+    CURSOR.execute(sql, values)
+    CONNECTION.commit()
+
+    return jsonify({'message': 'Contact modifié avec succès'}), 200
+
+@app.route('/api/contacts/<int:id>', methods=['DELETE'])
+def delete_contact(id):
+    sql = "DELETE FROM contacts WHERE id = %s"
+    values = (id,)
+
+    CURSOR.execute(sql, values)
+    CONNECTION.commit()
+
+    return jsonify({'message': 'Contact supprimé avec succès'}), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
