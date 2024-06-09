@@ -30,10 +30,11 @@ def index():
 <html>
 <head>
     <title>Gestion des contacts</title>
+    <meta charset="UTF-8">
 </head>
 <body>
     <h1>Gestion des contacts</h1>
-    <form id="contact-form">
+    <form id="contact-form" method="post" action="/api/contacts">
         <input type="hidden" id="contact-id" name="id">
         <label for="firstname">Prénom :</label>
         <input type="text" id="firstname" name="firstname" required><br>
@@ -50,8 +51,27 @@ def index():
         <input type="email" id="email" name="email" required><br>
         <label for="phone">Téléphone :</label>
         <input type="text" id="phone" name="phone" required><br>
-        <button type="button" onclick="saveContact()">Enregistrer</button>
+        <label for="company">Entreprise :</label>
+        <input type="text" id="company" name="company" required><br>
+        <label for="region">Région :</label>
+        <input type="text" id="region" name="region" required><br>
+        <button type="submit">Enregistrer</button>
     </form>
+    <br>
+    <div id="filters">
+        <input type="text" id="firstname-filter" oninput="applyFilters()" placeholder="Prénom">
+        <input type="text" id="lastname-filter" oninput="applyFilters()" placeholder="Nom">
+        <input type="text" id="email-filter" oninput="applyFilters()" placeholder="Email">
+        <input type="text" id="company-filter" oninput="applyFilters()" placeholder="Entreprise">
+        <input type="text" id="phone-filter" oninput="applyFilters()" placeholder="Téléphone">
+        <input type="text" id="age-filter-min" pattern="[0-9]+" oninput="applyFilters()" placeholder="Âge minimum">
+        <input type="text" id="age-filter-max" pattern="[0-9]+" oninput="applyFilters()" placeholder="Âge maximum">
+        <select id="sex-filter" onchange="applyFilters()">
+            <option value="">Tous les genres</option>
+            <option value="M">M</option>
+            <option value="F">F</option>
+        </select>
+    </div>
     <br>
     <button onclick="loadContacts()">Rechercher</button>
     <br>
@@ -65,7 +85,7 @@ def index():
                 <th>Email</th>
                 <th>Téléphone</th>
                 <th>Entreprise</th>
-                <th>Region</th>
+                <th>Région</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -74,10 +94,18 @@ def index():
     </table>
 
     <script>
-        const API_URL = '/api/contacts';
+        function applyFilters() {
+            const firstname = document.getElementById('firstname-filter').value;
+            const lastname = document.getElementById('lastname-filter').value;
+            const email = document.getElementById('email-filter').value;
+            const company = document.getElementById('company-filter').value;
+            const phone = document.getElementById('phone-filter').value;
+            const ageMin = document.getElementById('age-filter-min').value;
+            const ageMax = document.getElementById('age-filter-max').value;
+        }
 
         function loadContacts() {
-            fetch(API_URL)
+            fetch('/api/contacts')
                 .then(response => response.json())
                 .then(data => {
                     const tbody = document.getElementById('contacts-table').querySelector('tbody');
@@ -93,40 +121,39 @@ def index():
                             <td>${contact["n tel"]}</td>
                             <td>${contact.entreprise}</td>
                             <td>${contact.region}</td>
-                            <td>
-                                <button onclick="editContact(${contact.id}, '${contact.prenom}', '${contact.nom}', '${contact.sexe}', ${contact.age}, '${contact.email}', '${contact["n tel"]}')">Modifier</button>
-                                <button onclick="deleteContact(${contact.id})">Supprimer</button>
-                            </td>
                         `;
                         tbody.appendChild(row);
                     });
                 });
         }
 
-        function editContact(id, prenom, nom, sexe, age, email, phone) {
+        function editContact(id, firstname, lastname, sex, age, email, phone) {
             document.getElementById('contact-id').value = id;
-            document.getElementById('firstname').value = prenom;
-            document.getElementById('lastname').value = nom;
-            document.getElementById('sex').value = sexe;
+            document.getElementById('firstname').value = firstname;
+            document.getElementById('lastname').value = lastname;
+            document.getElementById('sex').value = sex;
             document.getElementById('age').value = age;
             document.getElementById('email').value = email;
             document.getElementById('phone').value = phone;
+            document.getElementById('company').value = company;
+            document.getElementById('region').value = region;
         }
 
         function deleteContact(id) {
-            fetch(`${API_URL}/${id}`, {
+            fetch(`/api/contacts/${id}`, {
                 method: 'DELETE'
             }).then(() => loadContacts());
         }
 
-        function saveContact() {
-            const formData = new FormData(document.getElementById('contact-form'));
+        document.getElementById('contact-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
             const data = Object.fromEntries(formData);
             const id = data.id;
             delete data.id;
 
             const method = id ? 'PUT' : 'POST';
-            const url = id ? `${API_URL}/${id}` : API_URL;
+            const url = id ? `/api/contacts/${id}` : '/api/contacts';
 
             fetch(url, {
                 method: method,
@@ -135,10 +162,10 @@ def index():
                 },
                 body: JSON.stringify(data)
             }).then(() => {
-                document.getElementById('contact-form').reset();
+                this.reset();
                 loadContacts();
             });
-        }
+        });
 
         window.onload = loadContacts;
     </script>
