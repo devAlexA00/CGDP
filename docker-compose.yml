@@ -1,21 +1,34 @@
-version: '3'
+version: '3.8'
 
 services:
   mongo:
-    image: mongo:latest
-    container_name: mongodb
+    build:
+      context: .
+      dockerfile: db.dockerfile
+    container_name: db
     volumes:
-      - ./mongo/init-mongo.js:/docker-entrypoint-initdb.d/ini-mongo.js:ro
+      - ./db:/data/db
     ports:
       - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
-  flask_app:
+  web_front:
     build:
-      context: ./flask_app   # Update this line to point to the correct directory
-    container_name: flaskapp
+      context: .
+      dockerfile: front.dockerfile
+    container_name: front
     ports:
       - "5000:5000"
     depends_on:
       - mongo
+    volumes:
+      - ./front:/front
+    working_dir: /front
+    command: ["python", "app.py"]
     environment:
       - MONGO_URI=mongodb://mongo:27017/CGDP_DB
