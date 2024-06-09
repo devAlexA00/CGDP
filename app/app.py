@@ -1,5 +1,5 @@
 from typing import List, Dict
-from flask import Flask, jsonify, render_template, redirect
+from flask import Flask, render_template, request, jsonify
 import mysql.connector
 import json
 
@@ -18,8 +18,33 @@ app = Flask(__name__)
 
 
 def get_contacts() -> List[Dict]:
-    CURSOR.execute('SELECT * FROM contacts')
-    results = [{"prenom": prenom, "nom": nom, "age": age, "sexe": sex,"email": email, "n tel": tel, 'entreprise': company, 'region': region} for (id, prenom, nom, age, sex, email, tel, company, region) in CURSOR.fetchall()]
+    filters = request.args
+    sql = 'SELECT * FROM contacts'
+    conditions = []
+
+    if 'prenom' in filters:
+        conditions.append(f"prenom LIKE '%{filters['prenom']}%'")
+    if 'nom' in filters:
+        conditions.append(f"nom LIKE '%{filters['nom']}%'")
+    if 'email' in filters:
+        conditions.append(f"email LIKE '%{filters['email']}%'")
+    if 'entreprise' in filters:
+        conditions.append(f"company LIKE '%{filters['entreprise']}%'")
+    if 'tel' in filters:
+        conditions.append(f"tel LIKE '%{filters['tel']}%'")
+    if 'age_min' in filters:
+        conditions.append(f"age >= {filters['age_min']}")
+    if 'age_max' in filters:
+        conditions.append(f"age <= {filters['age_max']}")
+    if 'sexe' in filters:
+        conditions.append(f"sex = '{filters['sexe']}'")
+
+    if conditions:
+        sql += ' WHERE ' + ' AND '.join(conditions)
+        sql += ';'
+
+    CURSOR.execute(sql)
+    results = [{"prenom": prenom, "nom": nom, "age": age, "sexe": sex, "email": email, "n tel": tel, 'entreprise': company, 'region': region} for (id, prenom, nom, age, sex, email, tel, company, region) in CURSOR.fetchall()]
     return results
 
 
@@ -102,6 +127,39 @@ def index():
             const phone = document.getElementById('phone-filter').value;
             const ageMin = document.getElementById('age-filter-min').value;
             const ageMax = document.getElementById('age-filter-max').value;
+            const sex = document.getElementById('sex-filter').value;
+
+            const params = new URLSearchParams();
+            if (firstname) params.append('prenom', firstname);
+            if (lastname) params.append('nom', lastname);
+            if (email) params.append('email', email);
+            if (company) params.append('entreprise', company);
+            if (phone) params.append('tel', phone);
+            if (ageMin) params.append('age_min', ageMin);
+            if (ageMax) params.append('age_max', ageMax);
+            if (sex) params.append('sexe', sex);
+
+            const url = `/api/contacts?${params.toString()}`;
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.getElementById('contacts-table').querySelector('tbody');
+                    tbody.innerHTML = '';
+                    data.forEach(contact => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${contact.prenom}</td>
+                            <td>${contact.nom}</td>
+                            <td>${contact.sexe}</td>
+                            <td>${contact.age}</td>
+                            <td>${contact.email}</td>
+                            <td>${contact["n tel"]}</td>
+                            <td>${contact.entreprise}</td>
+                            <td>${contact.region}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                });
         }
 
         function loadContacts() {
@@ -178,7 +236,6 @@ def index():
 def get_contacts_route() -> str:
     contacts = get_contacts()
     return jsonify(contacts)
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
