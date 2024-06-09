@@ -1,12 +1,12 @@
 services:
   db:
-    image: mysql:5.7
+    build: 
+      context: https://github.com/devAlexA00/CGDP.git
+      dockerfile: db/Dockerfile
     ports:
       - "32000:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root  # Set the root user's password
-    volumes:
-      - ./db:/docker-entrypoint-initdb.d/:ro
     healthcheck:
       test: mysqladmin ping -h 127.0.0.1 -u root --password=root
       start_period: 5s
@@ -15,7 +15,9 @@ services:
       retries: 55
 
   app:
-    build: ./app
+    build:
+      context: https://github.com/devAlexA00/CGDP.git
+      dockerfile: app/Dockerfile
     depends_on:
       db:
         condition: service_healthy
