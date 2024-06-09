@@ -23,15 +23,15 @@ def get_contacts() -> List[Dict]:
     conditions = []
 
     if 'prenom' in filters:
-        conditions.append(f"prenom LIKE '%{filters['prenom']}%'")
+        conditions.append(f"firstname LIKE '%{filters['prenom']}%'")
     if 'nom' in filters:
-        conditions.append(f"nom LIKE '%{filters['nom']}%'")
+        conditions.append(f"lastname LIKE '%{filters['nom']}%'")
     if 'email' in filters:
         conditions.append(f"email LIKE '%{filters['email']}%'")
     if 'entreprise' in filters:
         conditions.append(f"company LIKE '%{filters['entreprise']}%'")
     if 'tel' in filters:
-        conditions.append(f"tel LIKE '%{filters['tel']}%'")
+        conditions.append(f"phone LIKE '%{filters['tel']}%'")
     if 'age_min' in filters:
         conditions.append(f"age >= {filters['age_min']}")
     if 'age_max' in filters:
@@ -249,7 +249,7 @@ def add_contact():
     company = data['company']
     region = data['region']
 
-    sql = "INSERT INTO contacts (prenom, nom, age, sex, email, tel, company, region) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+    sql = "INSERT INTO contacts (firstname, lastname, age, sex, email, phone, company, region) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
     values = (prenom, nom, age, sex, email, tel, company, region)
 
     CURSOR.execute(sql, values)
@@ -269,7 +269,7 @@ def update_contact(id):
     company = data['company']
     region = data['region']
 
-    sql = "UPDATE contacts SET prenom = %s, nom = %s, age = %s, sex = %s, email = %s, tel = %s, company = %s, region = %s WHERE id = %s"
+    sql = "UPDATE contacts SET firstname = %s, lastname = %s, age = %s, sex = %s, email = %s, phone = %s, company = %s, region = %s WHERE id = %s"
     values = (prenom, nom, age, sex, email, tel, company, region, id)
 
     CURSOR.execute(sql, values)
