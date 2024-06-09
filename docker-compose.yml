@@ -1,17 +1,24 @@
-version: "2"
 services:
-  app:
-    build: ./app
-    links:
-      - db
-    ports:
-      - "5000:5000"
-
   db:
     image: mysql:5.7
     ports:
       - "32000:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root  # Set the root user's password
     volumes:
       - ./db:/docker-entrypoint-initdb.d/:ro
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u root --password=root
+      start_period: 5s
+      interval: 5s
+      timeout: 5s
+      retries: 55
+
+  app:
+    build: ./app
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+    ports:
+      - "5000:5000"
