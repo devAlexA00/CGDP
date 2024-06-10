@@ -254,10 +254,18 @@ def index():
     return html
 
 
-@app.route('/api/contacts', methods=['GET', 'POST'])
-def contacts():
+@app.route('/api/contacts/<int:id>', methods=['GET', 'POST'])
+def contacts(id=None):
     if request.method == 'GET':
-        return jsonify(get_contacts())
+        if id is None:
+            return jsonify(get_contacts()), 200
+        else:
+            contact = get_contacts(id)
+            if contact:
+                return jsonify(contact), 200
+            else:
+                return jsonify({'message': 'Contact not found'}), 404
+
     elif request.method == 'POST':
         contact_id = request.form.get('id')
         firstname = request.form.get('firstname')
@@ -281,14 +289,18 @@ def contacts():
             )
 
         CONNECTION.commit()
-        return jsonify({'message': 'Contact saved'})
+        return jsonify({'message': 'Contact saved'}), 201
 
 
 @app.route('/api/contacts/<int:id>', methods=['DELETE'])
 def delete_contact(id):
-    CURSOR.execute('DELETE FROM contacts WHERE id = %s', (id,))
-    CONNECTION.commit()
-    return jsonify({'message': 'Contact deleted'})
+    contact = get_contacts(id)
+    if contact:
+        CURSOR.execute('DELETE FROM contacts WHERE id = %s', (id,))
+        CONNECTION.commit()
+        return jsonify({'message': 'Contact deleted'}), 200
+    else:
+        return jsonify({'message': 'Contact not found'}), 404
 
 
 if __name__ == '__main__':
