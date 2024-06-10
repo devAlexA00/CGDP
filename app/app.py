@@ -1,5 +1,5 @@
 from typing import List, Dict
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, redirect
 import mysql.connector
 import sys
 
@@ -275,13 +275,13 @@ def contacts():
                 'INSERT INTO contacts (firstname, lastname, age, sex, email, phone, company, region) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)',
                 (firstname, lastname, age, sex, email, phone, company, region)
             )
-            return jsonify({'message': 'Contact sauvegarder.'})
+            return redirect('/')
         else:
             CURSOR.execute(
                 'UPDATE contacts SET firstname = %s, lastname = %s, age = %s, sex = %s, email = %s, phone = %s, company = %s, region = %s WHERE id = %s',
                 (firstname, lastname, age, sex, email, phone, company, region, contact_id)
             )
-            return jsonify({'message': 'Contact modifier.'})
+            return redirect('/')
 
 @app.route('/api/contacts/<int:id>', methods=['DELETE'])
 def delete_contact(id):
