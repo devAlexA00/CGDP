@@ -321,10 +321,8 @@ def update_contact(id):
 
 @app.route('/api/contacts/<int:id>', methods=['DELETE'])
 def delete_contact(id):
-    sql = "DELETE FROM contacts WHERE id = %s"
-    values = (id)
-
-    CURSOR.execute(sql, values)
+    print(id)
+    CURSOR.execute('DELETE FROM contacts WHERE id = %s', (id,))
     CONNECTION.commit()
 
     return jsonify({'message': 'Contact supprimé avec succès'}), 200
