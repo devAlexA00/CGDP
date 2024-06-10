@@ -61,7 +61,7 @@ def index():
 </head>
 <body>
     <h1>Gestion des contacts</h1>
-    <form id="contact-form" method="post" action="/api/contacts">
+    <form id="contact-form" method="post" action="/api/contacts" onsubmit="return validateForm()">
         <input type="hidden" id="contact-id" name="id">
         <label for="firstname">Prénom :</label>
         <input type="text" id="firstname" name="firstname" required><br>
@@ -163,7 +163,7 @@ def index():
                             <td>${contact.entreprise}</td>
                             <td>${contact.region}</td>
                             <td>
-                                <button onclick="editContact('${contact._id}', '${contact.firstname}', '${contact.lastname}', '${contact.sex}', '${contact.age}', '${contact.email}', '${contact.phone}')">Modifier</button>
+                                <button onclick="editContact('${contact._id}', '${contact.firstname}', '${contact.lastname}', '${contact.sex}', '${contact.age}', '${contact.email}', '${contact["n tel"]}', '${contact.entreprise}', '${contact.region}')">Modifier</button>
                                 <button onclick="deleteContact('${contact._id}')">Supprimer</button>
                             </td>
                         `;
@@ -200,7 +200,7 @@ def index():
                             <td>${contact.entreprise}</td>
                             <td>${contact.region}</td>
                             <td>
-                                <button onclick="editContact('${contact._id}', '${contact.firstname}', '${contact.lastname}', '${contact.sex}', '${contact.age}', '${contact.email}', '${contact.phone}')">Modifier</button>
+                                <button onclick="editContact('${contact._id}', '${contact.firstname}', '${contact.lastname}', '${contact.sex}', '${contact.age}', '${contact.email}', '${contact["n tel"]}', '${contact.entreprise}', '${contact.region}')">Modifier</button>
                                 <button onclick="deleteContact('${contact._id}')">Supprimer</button>
                             </td>
                         `;
@@ -225,6 +225,24 @@ def index():
             fetch(`/api/contacts/${id}`, {
                 method: 'DELETE'
             }).then(() => loadContacts());
+        }
+
+        function validateForm() {
+            const firstname = document.getElementById('firstname').value;
+            const lastname = document.getElementById('lastname').value;
+            const sex = document.getElementById('sex').value;
+            const age = document.getElementById('age').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const company = document.getElementById('company').value;
+            const region = document.getElementById('region').value;
+
+            if (!firstname || !lastname || !sex || !age || !email || !phone || !company || !region) {
+                document.getElementById('error-message').innerText = "Veuillez remplir tous les champs";
+                return false;
+            }
+
+            return true;
         }
 
         document.getElementById('contact-form').addEventListener('submit', function(event) {
