@@ -322,7 +322,7 @@ def update_contact(id):
 @app.route('/api/contacts/<int:id>', methods=['DELETE'])
 def delete_contact(id):
     sql = "DELETE FROM contacts WHERE id = %s"
-    values = (id,)
+    values = (id)
 
     CURSOR.execute(sql, values)
     CONNECTION.commit()
