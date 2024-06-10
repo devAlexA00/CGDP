@@ -282,14 +282,14 @@ def contacts():
             )
 
         CONNECTION.commit()
-        print('Contact saved', file=sys.stdout)
+        return
 
 
 @app.route('/api/contacts/<int:id>', methods=['DELETE'])
 def delete_contact(id):
     CURSOR.execute('DELETE FROM contacts WHERE id = %s', (id,))
     CONNECTION.commit()
-    print('TContact deleted', file=sys.stdout)
+    return
 
 
 if __name__ == '__main__':
