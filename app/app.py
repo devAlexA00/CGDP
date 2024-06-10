@@ -46,7 +46,7 @@ def get_contacts() -> List[Dict]:
         sql += ';'
 
     CURSOR.execute(sql)
-    results = [{"prenom": prenom, "nom": nom, "age": age, "sexe": sex, "email": email, "n tel": tel, 'entreprise': company, 'region': region} for (id, prenom, nom, age, sex, email, tel, company, region) in CURSOR.fetchall()]
+    results = [{"id": id, "prenom": prenom, "nom": nom, "age": age, "sexe": sex, "email": email, "n tel": tel, 'entreprise': company, 'region': region} for (id, prenom, nom, age, sex, email, tel, company, region) in CURSOR.fetchall()]
     return results
 
 
