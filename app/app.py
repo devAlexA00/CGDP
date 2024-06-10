@@ -1,7 +1,6 @@
 from typing import List, Dict
 from flask import Flask, request, jsonify
 import mysql.connector
-import json
 
 CONFIG = {
     'user': 'root',
@@ -62,7 +61,7 @@ def index():
 <body>
     <h1>Gestion des contacts</h1>
     <form id="contact-form" method="post" action="/api/contacts" onsubmit="return validateForm()">
-        <input type="hidden" id="contact-id" name="id">
+        <input type="hidden" id="contact-id" name="id" value="0">
         <label for="firstname">Prénom :</label>
         <input type="text" id="firstname" name="firstname" required><br>
         <label for="lastname">Nom :</label>
@@ -163,8 +162,8 @@ def index():
                             <td>${contact.entreprise}</td>
                             <td>${contact.region}</td>
                             <td>
-                                <button onclick="editContact('${contact._id}', '${contact.firstname}', '${contact.lastname}', '${contact.sex}', '${contact.age}', '${contact.email}', '${contact["n tel"]}', '${contact.entreprise}', '${contact.region}')">Modifier</button>
-                                <button onclick="deleteContact('${contact._id}')">Supprimer</button>
+                                <button onclick="editContact(${contact.id}, '${contact.prenom}', '${contact.nom}', '${contact.sexe}', ${contact.age}, '${contact.email}', '${contact["n tel"]}', '${contact.entreprise}', '${contact.region}')">Modifier</button>
+                                <button onclick="deleteContact(${contact.id})">Supprimer</button>
                             </td>
                         `;
                         tbody.appendChild(row);
@@ -200,8 +199,8 @@ def index():
                             <td>${contact.entreprise}</td>
                             <td>${contact.region}</td>
                             <td>
-                                <button onclick="editContact('${contact._id}', '${contact.firstname}', '${contact.lastname}', '${contact.sex}', '${contact.age}', '${contact.email}', '${contact["n tel"]}', '${contact.entreprise}', '${contact.region}')">Modifier</button>
-                                <button onclick="deleteContact('${contact._id}')">Supprimer</button>
+                                <button onclick="editContact(${contact.id}, '${contact.prenom}', '${contact.nom}', '${contact.sexe}', ${contact.age}, '${contact.email}', '${contact["n tel"]}', '${contact.entreprise}', '${contact.region}')">Modifier</button>
+                                <button onclick="deleteContact(${contact.id})">Supprimer</button>
                             </td>
                         `;
                         tbody.appendChild(row);
@@ -209,7 +208,7 @@ def index():
                 });
         }
 
-        function editContact(id, firstname, lastname, sex, age, email, phone) {
+        function editContact(id, firstname, lastname, sex, age, email, phone, company, region) {
             document.getElementById('contact-id').value = id;
             document.getElementById('firstname').value = firstname;
             document.getElementById('lastname').value = lastname;
@@ -221,110 +220,63 @@ def index():
             document.getElementById('region').value = region;
         }
 
-        function deleteContact(id) {
-            fetch(`/api/contacts/${id}`, {
-                method: 'DELETE'
-            }).then(() => loadContacts());
-        }
-
         function validateForm() {
-            const firstname = document.getElementById('firstname').value;
-            const lastname = document.getElementById('lastname').value;
-            const sex = document.getElementById('sex').value;
-            const age = document.getElementById('age').value;
-            const email = document.getElementById('email').value;
-            const phone = document.getElementById('phone').value;
-            const company = document.getElementById('company').value;
-            const region = document.getElementById('region').value;
-
-            if (!firstname || !lastname || !sex || !age || !email || !phone || !company || !region) {
-                document.getElementById('error-message').innerText = "Veuillez remplir tous les champs";
-                return false;
-            }
-
+            // Validation logic if any
             return true;
         }
 
-        document.getElementById('contact-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const formData = new FormData(this);
-            const data = Object.fromEntries(formData);
-            const id = data.id;
-            delete data.id;
+        function deleteContact(id) {
+            fetch(`/api/contacts/${id}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => loadContacts());
+        }
 
-            const method = id ? 'PUT' : 'POST';
-            const url = id ? `/api/contacts/${id}` : '/api/contacts';
-
-            fetch(url, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            }).then(() => {
-                this.reset();
-                loadContacts();
-            });
+        document.addEventListener('DOMContentLoaded', function() {
+            loadContacts();
         });
-
-        window.onload = loadContacts;
     </script>
 </body>
 </html>
 """
-    return html, 200
+    return html
 
-@app.route('/api/contacts', methods=['GET'])
-def get_contacts_route() -> str:
-    contacts = get_contacts()
-    return jsonify(contacts)
 
-@app.route('/api/contacts', methods=['POST'])
-def add_contact():
-    data = request.get_json()
-    prenom = data['firstname']
-    nom = data['lastname']
-    age = data['age']
-    sex = data['sex']
-    email = data['email']
-    tel = data['phone']
-    company = data['company']
-    region = data['region']
+@app.route('/api/contacts', methods=['GET', 'POST'])
+def contacts():
+    if request.method == 'GET':
+        return jsonify(get_contacts())
+    elif request.method == 'POST':
+        contact_id = request.form.get('id')
+        firstname = request.form.get('firstname')
+        lastname = request.form.get('lastname')
+        sex = request.form.get('sex')
+        age = request.form.get('age')
+        email = request.form.get('email')
+        phone = request.form.get('phone')
+        company = request.form.get('company')
+        region = request.form.get('region')
 
-    sql = "INSERT INTO contacts (firstname, lastname, age, sex, email, phone, company, region) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-    values = (prenom, nom, age, sex, email, tel, company, region)
+        if contact_id == '0':
+            CURSOR.execute(
+                'INSERT INTO contacts (firstname, lastname, age, sex, email, phone, company, region) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)',
+                (firstname, lastname, age, sex, email, phone, company, region)
+            )
+        else:
+            CURSOR.execute(
+                'UPDATE contacts SET firstname = %s, lastname = %s, age = %s, sex = %s, email = %s, phone = %s, company = %s, region = %s WHERE id = %s',
+                (firstname, lastname, age, sex, email, phone, company, region, contact_id)
+            )
 
-    CURSOR.execute(sql, values)
-    CONNECTION.commit()
+        CONNECTION.commit()
+        return jsonify({'message': 'Contact saved'})
 
-    return jsonify({'message': 'Contact ajouté avec succès'}), 201
-
-@app.route('/api/contacts/<int:id>', methods=['PUT'])
-def update_contact(id):
-    data = request.get_json()
-    prenom = data['firstname']
-    nom = data['lastname']
-    age = data['age']
-    sex = data['sex']
-    email = data['email']
-    tel = data['phone']
-    company = data['company']
-    region = data['region']
-
-    sql = "UPDATE contacts SET firstname = %s, lastname = %s, age = %s, sex = %s, email = %s, phone = %s, company = %s, region = %s WHERE id = %s"
-    values = (prenom, nom, age, sex, email, tel, company, region, id)
-
-    CURSOR.execute(sql, values)
-    CONNECTION.commit()
-
-    return jsonify({'message': 'Contact modifié avec succès'}), 200
 
 @app.route('/api/contacts/<int:id>', methods=['DELETE'])
 def delete_contact(id):
     CURSOR.execute('DELETE FROM contacts WHERE id = %s', (id,))
     CONNECTION.commit()
+    return jsonify({'message': 'Contact deleted'})
 
-    return jsonify({'message': 'Contact supprimé avec succès'}), 200
 
 if __name__ == '__main__':
-    app.run(port=5000, host='0.0.0.0')
+    app.run(host='0.0.0.0')
