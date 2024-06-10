@@ -221,7 +221,20 @@ def index():
         }
 
         function validateForm() {
-            // Validation logic if any
+            const firstname = document.getElementById('firstname').value;
+            const lastname = document.getElementById('lastname').value;
+            const sex = document.getElementById('sex').value;
+            const age = document.getElementById('age').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const company = document.getElementById('company').value;
+            const region = document.getElementById('region').value;
+
+            if (!firstname || !lastname || !sex || !age || !email || !phone || !company || !region) {
+                document.getElementById('error-message').innerText = "Veuillez remplir tous les champs";
+                return false;
+            }
+
             return true;
         }
 
