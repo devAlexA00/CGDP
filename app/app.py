@@ -16,11 +16,9 @@ print('Connexion DB OK')
 app = Flask(__name__)
 
 
-def get_contacts(id) -> List[Dict]:
+def get_contacts() -> List[Dict]:
     filters = request.args
     sql = 'SELECT * FROM contacts'
-    if id is not None:
-        sql += f' WHERE id = {id}'
     conditions = []
 
     if 'prenom' in filters:
@@ -42,11 +40,8 @@ def get_contacts(id) -> List[Dict]:
     if 'sexe' in filters:
         conditions.append(f"sex = '{filters['sexe']}'")
 
-    if conditions and id is None:
+    if conditions:
         sql += ' WHERE ' + ' AND '.join(conditions)
-        sql += ';'
-    elif conditions and id is not None:
-        sql += ' AND ' + ' AND '.join(conditions)
         sql += ';'
 
     CURSOR.execute(sql)
@@ -262,15 +257,15 @@ def index():
 @app.route('/api/contacts/<int:id>', methods=['GET', 'POST'])
 def contacts(id=None):
     if request.method == 'GET':
-        if id is not None:
+        if id is None:
+            return jsonify(get_contacts()), 200
+        else:
             contact = get_contacts(id)
             if contact:
                 return jsonify(contact), 200
             else:
                 return jsonify({'message': 'Contact not found'}), 404
-        else:
-            contacts = get_contacts(None)
-            return jsonify(contacts), 200
+
     elif request.method == 'POST':
         contact_id = request.form.get('id')
         firstname = request.form.get('firstname')
