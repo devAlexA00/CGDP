@@ -1,6 +1,7 @@
 from typing import List, Dict
 from flask import Flask, request, jsonify
 import mysql.connector
+import sys
 
 CONFIG = {
     'user': 'root',
@@ -281,14 +282,14 @@ def contacts():
             )
 
         CONNECTION.commit()
-        return jsonify({'message': 'Contact saved'})
+        print('Contact saved', file=sys.stdout)
 
 
 @app.route('/api/contacts/<int:id>', methods=['DELETE'])
 def delete_contact(id):
     CURSOR.execute('DELETE FROM contacts WHERE id = %s', (id,))
     CONNECTION.commit()
-    return jsonify({'message': 'Contact deleted'})
+    print('TContact deleted', file=sys.stdout)
 
 
 if __name__ == '__main__':
