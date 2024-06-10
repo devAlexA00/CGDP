@@ -282,14 +282,12 @@ def contacts():
             )
 
         CONNECTION.commit()
-        return
 
 
 @app.route('/api/contacts/<int:id>', methods=['DELETE'])
 def delete_contact(id):
     CURSOR.execute('DELETE FROM contacts WHERE id = %s', (id,))
     CONNECTION.commit()
-    return
 
 
 if __name__ == '__main__':
