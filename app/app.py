@@ -301,7 +301,6 @@ def add_contact():
 
 @app.route('/api/contacts/<int:id>', methods=['PUT'])
 def update_contact(id):
-    print(id)
     data = request.get_json()
     prenom = data['firstname']
     nom = data['lastname']
@@ -322,7 +321,6 @@ def update_contact(id):
 
 @app.route('/api/contacts/<int:id>', methods=['DELETE'])
 def delete_contact(id):
-    print(id)
     CURSOR.execute('DELETE FROM contacts WHERE id = %s', (id,))
     CONNECTION.commit()
 
