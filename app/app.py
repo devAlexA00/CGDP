@@ -30,6 +30,8 @@ def get_contacts() -> List[Dict]:
         conditions.append(f"email LIKE '%{filters['email']}%'")
     if 'entreprise' in filters:
         conditions.append(f"company LIKE '%{filters['entreprise']}%'")
+    if 'region' in filters:
+        conditions.append(f"region LIKE '%{filters['region']}%'")
     if 'tel' in filters:
         conditions.append(f"phone LIKE '%{filters['tel']}%'")
     if 'age_min' in filters:
@@ -88,9 +90,10 @@ def index():
         <input type="text" id="lastname-filter" oninput="applyFilters()" placeholder="Nom">
         <input type="text" id="email-filter" oninput="applyFilters()" placeholder="Email">
         <input type="text" id="company-filter" oninput="applyFilters()" placeholder="Entreprise">
+        <input type="text" id="region-filter" oninput="applyFilters()" placeholder="Region">
         <input type="text" id="phone-filter" oninput="applyFilters()" placeholder="Téléphone">
-        <input type="text" id="age-filter-min" pattern="[0-9]+" oninput="applyFilters()" placeholder="Âge minimum">
-        <input type="text" id="age-filter-max" pattern="[0-9]+" oninput="applyFilters()" placeholder="Âge maximum">
+        <input type="number" id="age-filter-min" min="0" oninput="applyFilters()" placeholder="Âge minimum">
+        <input type="number" id="age-filter-max" min="0" oninput="applyFilters()" placeholder="Âge maximum">
         <select id="sex-filter" onchange="applyFilters()">
             <option value="">Tous les genres</option>
             <option value="M">M</option>
@@ -100,6 +103,7 @@ def index():
     <br>
     <button onclick="loadContacts()">Rechercher</button>
     <br>
+    <div id="error-message"></div>
     <table id="contacts-table" border="1">
         <thead>
             <tr>
@@ -110,7 +114,7 @@ def index():
                 <th>Email</th>
                 <th>Téléphone</th>
                 <th>Entreprise</th>
-                <th>Région</th>
+                <th>Region</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -124,6 +128,7 @@ def index():
             const lastname = document.getElementById('lastname-filter').value;
             const email = document.getElementById('email-filter').value;
             const company = document.getElementById('company-filter').value;
+            const region = document.getElementById('region-filter').value;
             const phone = document.getElementById('phone-filter').value;
             const ageMin = document.getElementById('age-filter-min').value;
             const ageMax = document.getElementById('age-filter-max').value;
@@ -134,6 +139,7 @@ def index():
             if (lastname) params.append('nom', lastname);
             if (email) params.append('email', email);
             if (company) params.append('entreprise', company);
+            if (region) params.append('region', region);
             if (phone) params.append('tel', phone);
             if (ageMin) params.append('age_min', ageMin);
             if (ageMax) params.append('age_max', ageMax);
@@ -156,6 +162,10 @@ def index():
                             <td>${contact["n tel"]}</td>
                             <td>${contact.entreprise}</td>
                             <td>${contact.region}</td>
+                            <td>
+                                <button onclick="editContact('${contact._id}', '${contact.firstname}', '${contact.lastname}', '${contact.sex}', '${contact.age}', '${contact.email}', '${contact.phone}')">Modifier</button>
+                                <button onclick="deleteContact('${contact._id}')">Supprimer</button>
+                            </td>
                         `;
                         tbody.appendChild(row);
                     });
@@ -163,6 +173,16 @@ def index():
         }
 
         function loadContacts() {
+            const ageMin = document.getElementById('age-filter-min').value;
+            const ageMax = document.getElementById('age-filter-max').value;
+            
+            if (ageMin && ageMax && parseInt(ageMin) > parseInt(ageMax)) {
+                document.getElementById('error-message').innerText = "Âge minimum doit être inférieur ou égal à Âge maximum";
+                return;
+            }
+            
+            document.getElementById('error-message').innerText = "";
+            
             fetch('/api/contacts')
                 .then(response => response.json())
                 .then(data => {
@@ -179,6 +199,10 @@ def index():
                             <td>${contact["n tel"]}</td>
                             <td>${contact.entreprise}</td>
                             <td>${contact.region}</td>
+                            <td>
+                                <button onclick="editContact('${contact._id}', '${contact.firstname}', '${contact.lastname}', '${contact.sex}', '${contact.age}', '${contact.email}', '${contact.phone}')">Modifier</button>
+                                <button onclick="deleteContact('${contact._id}')">Supprimer</button>
+                            </td>
                         `;
                         tbody.appendChild(row);
                     });
@@ -288,4 +312,4 @@ def delete_contact(id):
     return jsonify({'message': 'Contact supprimé avec succès'}), 200
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.run(port=5000, host='0.0.0.0')
