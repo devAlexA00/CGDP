@@ -281,13 +281,13 @@ def contacts():
                 (firstname, lastname, age, sex, email, phone, company, region, contact_id)
             )
 
-        CONNECTION.commit()
-
+        return jsonify({'message': 'Contact saved'})
 
 @app.route('/api/contacts/<int:id>', methods=['DELETE'])
 def delete_contact(id):
     CURSOR.execute('DELETE FROM contacts WHERE id = %s', (id,))
     CONNECTION.commit()
+    return jsonify({'message': 'Contact deleted'})
 
 
 if __name__ == '__main__':
